@@ -23,8 +23,8 @@ public class MyCarSequencing extends AbstractProblem {
 	}
 
 	@Option(name = "-d", aliases = "--data", usage = "Car sequencing data.", required = false)
-	CSPLib data = CSPLib.valueOf("random18");
-//	Data data = Data.P4_72;
+//	CSPLib data = CSPLib.valueOf("random18");
+	Data data = Data.myPb;
 //	MyData data = MyData.md;
 //
 	IntVar[] CarSeq;
@@ -85,12 +85,12 @@ public class MyCarSequencing extends AbstractProblem {
 
 			int res = nCars % m;
 			int facNum = nCars / m;
-			if (res != 0) {
+			if (res != 0) {//如果有余数，则多创建一个元组
 				facNum++;
 			}
-			IntVar[] facVars = new IntVar[facNum];
+			IntVar[] facVars = new IntVar[facNum];//每个元组末位代表编号的值
 			for (int j = 0; j < nCars / m; j++) {
-				IntVar[] column1 = new IntVar[m + 1];
+				IntVar[] column1 = new IntVar[m + 1];//长度为m+1的元组，拼接了取值所代表的编号facVars
 				for (int k = 0; k < m; k++) {
 					column1[k] = cars[j * m + k][i];
 				}
@@ -98,11 +98,11 @@ public class MyCarSequencing extends AbstractProblem {
 				column1[m] = facVars[j];
 				model.table(column1, facTuple, "CT+").post();
 			}
-			for (int j = 0; j < nCars / m - 1; j++) {
+			for (int j = 0; j < nCars / m - 1; j++) {//用来约束每两个相邻元组可能的取值编号
 				model.table(facVars[j], facVars[j + 1], binTuple, "AC3bit+rm").post();
 			}
 
-			if (res != 0) {
+			if (res != 0) {//当有余数时，一列数据末尾多余的元组以新的方式与前一相邻元组建立约束
 				int[][] rtps = geneAllowedTuple(n, res);
 				Tuples rtp = geneFactorTuples(rtps);
 				facVars[facNum - 1] = model.intVar("B[" + i + "][" + (facNum - 1) + "]", 0, rtps.length - 1);
@@ -136,6 +136,10 @@ public class MyCarSequencing extends AbstractProblem {
 
 	}
 	
+	/**
+	 * 为每一个元组可能取的值进行编号，并将编号保存在元组末位
+	 * 将编号完成后的元组依次添加到facTuple中并返回
+	 * */
 	public Tuples geneFactorTuples(int[][] tuples) {
 		int m = tuples.length;
 		int n = tuples[0].length;
@@ -151,6 +155,9 @@ public class MyCarSequencing extends AbstractProblem {
 		return facTuple;
 	}
 
+	/**
+	 * 将相邻元组之间所有可能的取值搭配罗列出来，并用取值所对应的编号来保存信息
+	 * */
 	public Tuples geneConnection(int[][] tps1, int[][] tps2, int n, int m) {
 		ArrayList<int[]> list = new ArrayList<int[]>(m * n);
 		for (int i = 0; i < tps1.length; i++) {
@@ -188,7 +195,11 @@ public class MyCarSequencing extends AbstractProblem {
 		return facTuple;
 	}
 
+	/**
+	 * 通过递归遍历出每个元组所有可能的取值
+	 * */
 	public int[][] geneAllowedTuple(int n, int m) {
+		//n为容量约束中的p，m为容量约束中的q
 		ArrayList<int[]> list = new ArrayList<int[]>();
 		list.add(new int[m]);
 

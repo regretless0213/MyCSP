@@ -177,10 +177,11 @@ public class STGCS extends AbstractProblem {
 		List<Float> timeList = new ArrayList<Float>();
 		int fq = 10; // 限制每个数据运行fq次取平均
 		int sindex = 1;// 一组数据的起始索引
-		int eindex = 11;// 一组数据尾部的索引
+		int eindex = 10;// 一组数据尾部的索引
+		String dataName = "md_m";
 
 		for (int i = sindex; i <= eindex; i++) {
-			String atmp = "md_b";
+			String atmp = dataName;
 			if (i < 10) {
 				atmp += "0" + i;
 			} else {
@@ -205,7 +206,7 @@ public class STGCS extends AbstractProblem {
 		float sum = 0.0f;
 		for (float pr : timeList) {
 
-			String p = "md_b";
+			String p = dataName;
 			if (i < 10) {
 				p += "0" + i;
 			} else {

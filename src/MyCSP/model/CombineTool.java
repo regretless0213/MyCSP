@@ -7,6 +7,7 @@ public class CombineTool {
 
 	
 	public int[][] genResult(int n,int m){
+		//n为容量约束中的p，m为容量约束中的q
 		List<Integer> data = new ArrayList<Integer>();
 		for (int i = 0; i < m; i++) {
 			data.add(i);
@@ -34,7 +35,7 @@ public class CombineTool {
 	 * @param k
 	 *            C(n,k)中的k
 	 */
-	public <E> void combinerSelect(List<E> data, List<E> workSpace, int n, int k) {
+	public <E> void combinerSelect(List<E> data, List<E> workSpace, int s, int k) {
 		List<E> copyData;
 		List<E> copyWorkSpace;
 
@@ -53,7 +54,7 @@ public class CombineTool {
 			copyWorkSpace.add(copyData.get(i));
 			for (int j = i; j >= 0; j--)
 				copyData.remove(j);
-			combinerSelect(copyData, copyWorkSpace, n, k);
+			combinerSelect(copyData, copyWorkSpace, s, k);
 		}
 
 	}

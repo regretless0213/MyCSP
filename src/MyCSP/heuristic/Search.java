@@ -12,7 +12,7 @@ import org.chocosolver.solver.search.strategy.selectors.variables.*;
 import org.chocosolver.solver.search.strategy.strategy.*;
 import org.chocosolver.solver.variables.IntVar;
 
-
+import MyCSP.heuristic.values.SUStandardization;
 import MyCSP.heuristic.values.SelectionAggregation;
 import MyCSP.heuristic.variables.Exploration;
 
@@ -90,6 +90,12 @@ public class Search {
 //		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SUStandardization(vars, 0, mat, opm, dm), vars);
 		
 		
+//		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SAStandardization(vars, 6, mat, opm, dm), vars);
+	}
+	public static AbstractStrategy<IntVar> MyRemixHeuristicSearch(IntVar[] vars, int[][] mat, int[][] opm, int[] dm) {
+
+		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SUStandardization(vars, 0, mat, opm, dm), vars);
+
 //		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SAStandardization(vars, 6, mat, opm, dm), vars);
 	}
 }
