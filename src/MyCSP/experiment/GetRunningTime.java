@@ -21,10 +21,10 @@ public class GetRunningTime {
 	public static void main(String[] args) {
 
 		List<Float> timeList = new ArrayList<Float>();
-		int fq = 1; // 限制每个数据运行fq次取平均
-		int sindex = 10;// 一组数据的起始索引
-		int eindex = 10;// 一组数据尾部的索引
-		String dataName = "random";
+		int fq = 10; // 限制每个数据运行fq次取平均
+		int sindex = 1;// 一组数据的起始索引
+		int eindex = 30;// 一组数据尾部的索引
+		String dataName = "pb";
 
 		for (int i = sindex; i <= eindex; i++) {
 			String atmp = dataName;

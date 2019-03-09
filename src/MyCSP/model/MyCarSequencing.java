@@ -56,8 +56,10 @@ public class MyCarSequencing extends AbstractProblem {
 			int[] row = new int[nOptions + 1];
 			row[0] = i;
 			for (int j = 0; j < nOptions; j++) {
+//				System.out.print(matrix[i][j]+" ");
 				row[j + 1] = matrix[i][j];
 			}
+//			System.out.println();
 			tp.add(row);
 		}
 		for (int i = 0; i < nCars; i++) {

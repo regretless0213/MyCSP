@@ -16,6 +16,11 @@ public final class SelectionAggregation implements IntValueSelector {
 	private int[][] matrix, optfreq; // 传递过来的0/1矩阵、容量矩阵
 	private int[] demands, result, slotava; // 传递过来的每个类的需求;存储动态下每个零件已经安装了几次；每个零件对应的剩余插槽数
 //	private int slots; // 总插槽数
+	
+	private enum WeightStrategy{
+		constant,capacity,redemand,load,slack,usagerate,neweight
+	} 
+	private WeightStrategy ws;
 
 	public SelectionAggregation(IntVar[] vars, long seed, int[][] options, int[][] frequency, int[] nums) {
 		bests = new TIntArrayList();
@@ -31,6 +36,8 @@ public final class SelectionAggregation implements IntValueSelector {
 			slotava[j] = sumofArray(demands);
 		}
 		// System.out.println(slots);
+		//选择权值计算策略
+		ws = WeightStrategy.load;
 	}
 
 	private int sumofArray(int[] array) {
@@ -116,7 +123,34 @@ public final class SelectionAggregation implements IntValueSelector {
 		for (int idx = var.getLB(); idx <= up; idx = var.nextValue(idx)) {
 			// System.out.print("value ");
 			// System.out.print(idx + " ");
-			double weight = load(matrix[idx]); // 权值
+			double weight = -1; // 权值
+			switch(ws) {
+			case capacity:
+				weight = capacity(matrix[idx]);
+				break;
+			case constant:
+				weight = weight(matrix[idx]);
+				break;
+			case load:
+				weight = load(matrix[idx]);
+				break;
+			case neweight:
+				weight = neweight(matrix[idx]);
+				break;
+			case redemand:
+				weight = redemand(matrix[idx]);
+				break;
+			case slack:
+				weight = slack(matrix[idx]);
+				break;
+			case usagerate:
+				weight = usagerate(matrix[idx]);
+				break;
+			default:
+				System.out.println("权值策略设置有误！");
+				break;
+			
+			}
 			if (weight > _d) {
 				bests.clear();
 				bests.add(idx);

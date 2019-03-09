@@ -1,6 +1,5 @@
 package MyCSP;
 
-import static MyCSP.heuristic.Search.MyHeuristicSearch;
 
 import org.chocosolver.samples.AbstractProblem;
 import org.chocosolver.solver.Model;

@@ -7,9 +7,15 @@ import MyCSP.model.MyCarSequencing;
 import MyCSP.model.STGCS;
 
 public class CheckForCSUpdate {
+	
+	enum Model{
+		STGCS,MyCarSequencing
+	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+
+		Model model = Model.STGCS;
 		String dataName = "random";
 		List<String> sf = new ArrayList<String>();
 		int sum = 0;
@@ -26,8 +32,18 @@ public class CheckForCSUpdate {
 			}
 
 			List<String> r = new ArrayList<>();
-//			new MyCarSequencing(r).execute(args);
-			new STGCS(r).execute(args);
+			switch(model) {
+			case MyCarSequencing:
+				new MyCarSequencing(r).execute(args);
+				break;
+			case STGCS:
+				new STGCS(r).execute(args);
+				break;
+			default:
+				System.out.println(n + "模型选择有误！");
+				break;
+			
+			}
 			String[] result = new String[r.size() * 3];
 //			System.out.println(r.size());
 			int i = 0;

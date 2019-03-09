@@ -34,7 +34,7 @@ public class STGCS extends AbstractProblem {
 
 	@Option(name = "-d", aliases = "--data", usage = "Car sequencing data.", required = false)
 
-	CSPLib data = CSPLib.valueOf("random10");
+	CSPLib data = CSPLib.valueOf("pb20");
 //	MyData data = MyData.valueOf("md_b01");
 //	Data data = Data.P41_66;
 
@@ -66,8 +66,10 @@ public class STGCS extends AbstractProblem {
 			int[] row = new int[nOptions + 1];
 			row[0] = i;
 			for (int j = 0; j < nOptions; j++) {
+//				System.out.print(matrix[i][j]+" ");
 				row[j + 1] = matrix[i][j];
 			}
+//			System.out.println();
 			tp.add(row);
 		}
 		for (int i = 0; i < nCars; i++) {
