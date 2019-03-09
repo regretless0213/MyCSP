@@ -1,7 +1,10 @@
-package MyCSP.model;
+package MyCSP.experiment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import MyCSP.model.MyCarSequencing;
+import MyCSP.model.STGCS;
 
 public class CheckForCSUpdate {
 
@@ -23,7 +26,8 @@ public class CheckForCSUpdate {
 			}
 
 			List<String> r = new ArrayList<>();
-			new MyCarSequencing(r).execute(args);
+//			new MyCarSequencing(r).execute(args);
+			new STGCS(r).execute(args);
 			String[] result = new String[r.size() * 3];
 //			System.out.println(r.size());
 			int i = 0;

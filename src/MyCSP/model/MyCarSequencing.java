@@ -16,7 +16,9 @@ import java.util.Scanner;
 import static MyCSP.heuristic.Search.MyHeuristicSearch;
 
 public class MyCarSequencing extends AbstractProblem {
+	
 	private List<String> result;
+	
 	public MyCarSequencing(List<String> rtmp) {
 		// TODO Auto-generated constructor stub
 		result = rtmp;

@@ -1,5 +1,5 @@
 
-package MyCSP.model;
+package MyCSP.experiment;
 
 import org.chocosolver.samples.AbstractProblem;
 import org.chocosolver.solver.Model;

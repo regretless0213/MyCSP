@@ -1,4 +1,4 @@
-package MyCSP;
+package MyCSP.experiment;
 
 import java.util.ArrayList;
 import java.util.List;

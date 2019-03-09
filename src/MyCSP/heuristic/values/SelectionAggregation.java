@@ -116,7 +116,7 @@ public final class SelectionAggregation implements IntValueSelector {
 		for (int idx = var.getLB(); idx <= up; idx = var.nextValue(idx)) {
 			// System.out.print("value ");
 			// System.out.print(idx + " ");
-			double weight = slack(matrix[idx]); // Ȩֵ
+			double weight = load(matrix[idx]); // Ȩֵ
 			if (weight > _d) {
 				bests.clear();
 				bests.add(idx);

@@ -9,7 +9,6 @@ import org.kohsuke.args4j.Option;
 
 import MyCSP.model.data.DataSet.*;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -20,16 +19,23 @@ public class STGCS extends AbstractProblem {
 
 	private float[] timetmp;
 	private int ttindex;
+	private List<String> result;
 
+	public STGCS(List<String> rtmp) {
+		timetmp = new float[1];
+		ttindex = 0;
+		result = rtmp;
+	}
 	public STGCS(float[] tt, int i) {
 		timetmp = tt;
 		ttindex = i;
+		result = new ArrayList<>();
 	}
 
 	@Option(name = "-d", aliases = "--data", usage = "Car sequencing data.", required = false)
 
-//	CSPLib data = CSPLib.valueOf("random01");
-	MyData data = MyData.valueOf("md_b01");
+	CSPLib data = CSPLib.valueOf("random10");
+//	MyData data = MyData.valueOf("md_b01");
 //	Data data = Data.P41_66;
 
 	IntVar[] CarSeq;
@@ -85,11 +91,9 @@ public class STGCS extends AbstractProblem {
 			int denominator = optfreq[i][1];
 			int module = nCars - denominator;
 
-			int j = 0;
-			while (j <= module) {
+			for(int j = 0;j < module;j++) {
 				IntVar[] array = extractor(cars, j, denominator, i);
 				model.sum(array, "<=", numerator).post();
-				j++;
 			}
 
 			// 对每个零件进行总数约束
@@ -145,6 +149,12 @@ public class STGCS extends AbstractProblem {
 //		model.getSolver().printStatistics();
 		float time = model.getSolver().getTimeCount();
 		timetmp[ttindex] = time;
+
+		for (int i = 0; i < nCars; i++) {
+			//将结果存储到List中
+			result.add(model.getVars()[i].toString());
+
+		}
 //		System.out.println(time);
 		// 打印结果
 //		for (int i = 0; i < model.getNbVars(); i++) {
@@ -173,58 +183,12 @@ public class STGCS extends AbstractProblem {
 	}
 
 	public static void main(String[] args) {
-
-		List<Float> timeList = new ArrayList<Float>();
-		int fq = 10; // 限制每个数据运行fq次取平均
-		int sindex = 1;// 一组数据的起始索引
-		int eindex = 10;// 一组数据尾部的索引
-		String dataName = "md_m";
-
-		for (int i = sindex; i <= eindex; i++) {
-			String atmp = dataName;
-			if (i < 10) {
-				atmp += "0" + i;
-			} else {
-				atmp += i;
-			}
-			args[1] = atmp;
-			float[] ttmp = new float[fq];
-			for (int j = 0; j < fq; j++) {
-				new STGCS(ttmp, j).execute(args);
-				if (ttmp[j] > 1100) {//运行时间超过1100视为超时
-					ttmp[j] = -fq;
-					break;
-				}
-//				System.out.println("ttmp:"+ttmp[1]);
-			}
-			timeList.add(getAverage(ttmp));
+		List<String> r = new ArrayList<>();
+		new STGCS(r).execute(args);
+		System.out.println("列表：");
+		for(String tmp : r) {
+			System.out.println(tmp);
 		}
-
-		int i = sindex;
-		// 打印结果
-		int failcount = 0;
-		float sum = 0.0f;
-		for (float pr : timeList) {
-
-			String p = dataName;
-			if (i < 10) {
-				p += "0" + i;
-			} else {
-				p += i;
-			}
-			if (pr > 0) {
-				sum += pr;
-			} else {
-				failcount++;
-			}
-			DecimalFormat df = new DecimalFormat("0.000");
-			System.out.println(p + ":\t" + df.format(pr));
-			i++;
-		}
-		System.out.println("平均值:\t" + sum / (i - failcount));
-		System.out.println("通过率:\t" + (float)(i - failcount) / i);
-//		args[1] += "0" + 5;
-//		new STGCS().execute(args);
 	}
 
 	private int[][] parse(String source) {

@@ -4,19 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CombineTool {
-
-	
-	public int[][] genResult(int n,int m){
-		//n为容量约束中的p，m为容量约束中的q
+	/**
+	 * 找出所有满足条件的数字组合作为Index。
+	 * 在生成元组值域时，结果集re中出现的Index位置都置为1。
+	 * 
+	 * @param n 限制一个元组中最多有n个1
+	 * @param m 元组的长度为m
+	 * */
+	public int[][] genResult(int n, int m) {
+		// n为容量约束中的p，m为容量约束中的q
 		List<Integer> data = new ArrayList<Integer>();
 		for (int i = 0; i < m; i++) {
 			data.add(i);
 		}
-		for (int i = 1; i <=n; i++)
+		for (int i = 1; i <= n; i++)
 			combinerSelect(data, new ArrayList<Integer>(), data.size(), i);
-		
-		int[][] re=new int[0][0];
-		re=result.toArray(re);
+
+		int[][] re = new int[0][0];
+		re = result.toArray(re);
 		return re;
 	}
 
@@ -28,21 +33,18 @@ public class CombineTool {
 	 * 因此在传参之前，应该对copydata作以处理；当大于k的时候，则表明已经找到满足条件的第一种情况，然后只需修改该情况的最后一个结果即可。
 	 * 如：找到abc时，则只需替换c为d即可完成该轮递归。
 	 * 
-	 * @param data
-	 *            原始数据
-	 * @param workSpace
-	 *            自定义一个临时空间，用来存储每次符合条件的值
-	 * @param k
-	 *            C(n,k)中的k
+	 * @param data      原始数据
+	 * @param workSpace 自定义一个临时空间，用来存储每次符合条件的值
+	 * @param k         C(n,k)中的k
 	 */
 	public <E> void combinerSelect(List<E> data, List<E> workSpace, int s, int k) {
 		List<E> copyData;
 		List<E> copyWorkSpace;
 
 		if (workSpace.size() == k) {
-			int[] tp=new int[k];
-			for(int i=0;i<k;i++){
-				tp[i]=(int)workSpace.get(i);
+			int[] tp = new int[k];
+			for (int i = 0; i < k; i++) {
+				tp[i] = (int) workSpace.get(i);
 			}
 			result.add(tp);
 		}
@@ -58,7 +60,7 @@ public class CombineTool {
 		}
 
 	}
-	
-	ArrayList<int[]> result=new ArrayList<int[]>();
+
+	ArrayList<int[]> result = new ArrayList<int[]>();
 
 }
