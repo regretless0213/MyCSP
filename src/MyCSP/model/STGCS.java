@@ -34,9 +34,9 @@ public class STGCS extends AbstractProblem {
 
 	@Option(name = "-d", aliases = "--data", usage = "Car sequencing data.", required = false)
 
-	CSPLib data = CSPLib.valueOf("pb20");
+	CSPLib data = CSPLib.valueOf("random05");
 //	MyData data = MyData.valueOf("md_b01");
-//	Data data = Data.P41_66;
+//	Data data = Data.myPb;
 
 	IntVar[] CarSeq;
 	IntVar[][] cars;
@@ -148,7 +148,7 @@ public class STGCS extends AbstractProblem {
 	@Override
 	public void solve() {
 		model.getSolver().solve();
-//		model.getSolver().printStatistics();
+		model.getSolver().printStatistics();
 		float time = model.getSolver().getTimeCount();
 		timetmp[ttindex] = time;
 

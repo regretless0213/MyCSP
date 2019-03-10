@@ -7,12 +7,12 @@ import org.chocosolver.solver.search.strategy.selectors.variables.VariableSelect
 import org.chocosolver.solver.variables.Variable;
 
 
-public class Exploration<V extends Variable> implements VariableSelector<V> {
+public class LexExploration<V extends Variable> implements VariableSelector<V> {
 
     private IStateInt lastIdx; // index of the last non-instantiated variable
 
 
-    public Exploration(Model model){
+    public LexExploration(Model model){
         lastIdx = model.getEnvironment().makeInt(0);
     }
 
@@ -21,6 +21,7 @@ public class Exploration<V extends Variable> implements VariableSelector<V> {
         for (int idx = lastIdx.get(); idx < variables.length; idx++) {
             if (!variables[idx].isInstantiated()) {
                 lastIdx.set(idx);
+//                System.out.println(idx);
                 return variables[idx];
             }
         }

@@ -14,7 +14,8 @@ import org.chocosolver.solver.variables.IntVar;
 
 import MyCSP.heuristic.values.SUStandardization;
 import MyCSP.heuristic.values.SelectionAggregation;
-import MyCSP.heuristic.variables.Exploration;
+import MyCSP.heuristic.variables.LexExploration;
+import MyCSP.heuristic.variables.MidExploration;
 
 
 public class Search {
@@ -86,15 +87,14 @@ public class Search {
 	public static AbstractStrategy<IntVar> MyHeuristicSearch(IntVar[] vars, int[][] mat, int[][] opm, int[] dm) {
 //		return new Heuristic(vars, 0, new IntDomainMin(), mat, opm, dm);
 //		return new DomOverWDeg(vars, 0, new SelectionAggregation(vars, 0, mat, opm, dm));
-		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SelectionAggregation(vars, 0, mat, opm, dm), vars);
-//		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SUStandardization(vars, 0, mat, opm, dm), vars);
 		
-		
-//		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SAStandardization(vars, 6, mat, opm, dm), vars);
+//		return intVarSearch(new LexExploration<IntVar>(vars[0].getModel()), new SelectionAggregation(vars, 0, mat, opm, dm), vars);
+
+		return intVarSearch(new MidExploration<IntVar>(), new SelectionAggregation(vars, 0, mat, opm, dm), vars);
 	}
 	public static AbstractStrategy<IntVar> MyRemixHeuristicSearch(IntVar[] vars, int[][] mat, int[][] opm, int[] dm) {
 
-		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SUStandardization(vars, 0, mat, opm, dm), vars);
+		return intVarSearch(new LexExploration<IntVar>(vars[0].getModel()), new SUStandardization(vars, 0, mat, opm, dm), vars);
 
 //		return intVarSearch(new Exploration<IntVar>(vars[0].getModel()), new SAStandardization(vars, 6, mat, opm, dm), vars);
 	}

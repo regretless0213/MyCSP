@@ -3,6 +3,9 @@ package MyCSP.heuristic.values;
 
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TIntArrayList;
+
+import java.util.Arrays;
+
 import org.chocosolver.solver.search.strategy.selectors.values.IntValueSelector;
 import org.chocosolver.solver.variables.IntVar;
 
@@ -16,11 +19,18 @@ public final class SelectionAggregation implements IntValueSelector {
 	private int[][] matrix, optfreq; // 传递过来的0/1矩阵、容量矩阵
 	private int[] demands, result, slotava; // 传递过来的每个类的需求;存储动态下每个零件已经安装了几次；每个零件对应的剩余插槽数
 //	private int slots; // 总插槽数
-	
-	private enum WeightStrategy{
-		constant,capacity,redemand,load,slack,usagerate,neweight
-	} 
+
+	private enum WeightStrategy {
+		constant, capacity, redemand, load, slack, usagerate, neweight
+	}
+
 	private WeightStrategy ws;
+
+	private enum AggregationStrategy {
+		Sum, Euc, Lex
+	}
+
+	private AggregationStrategy as;
 
 	public SelectionAggregation(IntVar[] vars, long seed, int[][] options, int[][] frequency, int[] nums) {
 		bests = new TIntArrayList();
@@ -36,8 +46,9 @@ public final class SelectionAggregation implements IntValueSelector {
 			slotava[j] = sumofArray(demands);
 		}
 		// System.out.println(slots);
-		//选择权值计算策略
+		// 选择权值计算策略
 		ws = WeightStrategy.load;
+		as = AggregationStrategy.Sum;
 	}
 
 	private int sumofArray(int[] array) {
@@ -119,46 +130,86 @@ public final class SelectionAggregation implements IntValueSelector {
 		}
 
 		double _d = 0;
+		double[] _da = new double[optfreq.length];
 		int up = var.getUB();
 		for (int idx = var.getLB(); idx <= up; idx = var.nextValue(idx)) {
 			// System.out.print("value ");
 			// System.out.print(idx + " ");
-			double weight = -1; // 权值
-			switch(ws) {
-			case capacity:
-				weight = capacity(matrix[idx]);
-				break;
-			case constant:
-				weight = weight(matrix[idx]);
-				break;
-			case load:
-				weight = load(matrix[idx]);
-				break;
-			case neweight:
-				weight = neweight(matrix[idx]);
-				break;
-			case redemand:
-				weight = redemand(matrix[idx]);
-				break;
-			case slack:
-				weight = slack(matrix[idx]);
-				break;
-			case usagerate:
-				weight = usagerate(matrix[idx]);
-				break;
-			default:
-				System.out.println("权值策略设置有误！");
-				break;
-			
+			Object wtmp = aggregateWeight(matrix[idx]); // 权值
+//			double weight = -1;
+//			switch (ws) {
+//			case capacity:
+//				weight = capacity(matrix[idx]);
+//				break;
+//			case constant:
+//				weight = weight(matrix[idx]);
+//				break;
+//			case load:
+//				weight = load(matrix[idx]);
+//				break;
+//			case neweight:
+//				weight = neweight(matrix[idx]);
+//				break;
+//			case redemand:
+//				weight = redemand(matrix[idx]);
+//				break;
+//			case slack:
+//				weight = slack(matrix[idx]);
+//				break;
+//			case usagerate:
+//				weight = usagerate(matrix[idx]);
+//				break;
+//			default:
+//				System.out.println("权值策略设置有误！");
+//				break;
+//
+//			}
+			if (wtmp.getClass().isAssignableFrom(Double.class)) {
+				
+//				System.out.println("常规权值聚合：");
+				
+				double weight = (double) wtmp;
+//				System.out.print(weight+" ");
+				if (weight > _d) {
+					bests.clear();
+					bests.add(idx);
+					_d = weight;
+				} else if (_d == weight) {
+					bests.add(idx);
+				}
+			} else if(wtmp.getClass().isAssignableFrom(double[].class)){// 聚合方程为Lex是的选值策略
+				
+//				System.out.println("Lex权值聚合：");
+				
+				int alleq = 1;// 判断是否数组中每个值都相等
+				double[] weight = (double[]) wtmp;
+//				//输出权值情况
+//				System.out.print("{");
+//				for(double printd:weight) {
+//					System.out.print(printd+" ");
+//				}
+//				System.out.println("}");
+				for (int i = 0; i < weight.length; i++) {
+					if (weight[i] > _da[i]) {// 有一个值大于预存值就保存该值的index并结束循环
+						alleq = 0;
+						bests.clear();
+						bests.add(idx);
+						_da = weight;
+						break;
+					} else if (weight[i] < _da[i]) {// 有一个值小于预存值则该值不作考虑直接结束循环
+						alleq = 0;
+						break;
+					}
+				}
+				if (alleq == 1) {
+					bests.add(idx);
+				}
+			}else {
+				System.out.println(wtmp.getClass()+" Object类别匹配出错！");
 			}
-			if (weight > _d) {
-				bests.clear();
-				bests.add(idx);
-				_d = weight;
-			} else if (_d == weight) {
-				bests.add(idx);
-			}
+//			System.out.println(idx+"变量");
 		}
+		
 //		System.out.println("最优值列表大小"+bests.size());
 		// System.out.println();
 //		if (bests.size() > 0) {
@@ -176,41 +227,84 @@ public final class SelectionAggregation implements IntValueSelector {
 		} catch (Exception e) {
 			System.out.println("weight error!");
 		}
+//		System.out.println("选择变量"+currentVar);
 		return currentVar;
 
 	}
 
-	// 常数
-	private double weight(int[] v) {
-		double w = 0;
-		for (int i = 0; i < v.length; i++) {
-			w += v[i];
+	private Object aggregateWeight(int[] va) {
+		int length = va.length;
+		double weight = 0;
+		double[] lexweight = new double[length];
+		for (int i = 0; i < length; i++) {
+			double wtmp = getWeight(va[i], i);
+			switch (as) {
+			case Euc:
+				weight += Math.pow(wtmp, 2);
+				break;
+			case Lex:
+				lexweight[i] = wtmp;
+				break;
+			case Sum:
+				weight += wtmp;
+				break;
+			default:
+				System.out.println("聚合方程设置有误！");
+				break;
+
+			}
 		}
-//		System.out.print(w + " ");
-		return w;
+		switch (as) {
+		case Lex:
+			return sortArray(lexweight);
+		default:
+			return weight;
+
+		}
+	}
+	private double[] sortArray(double[] array) {
+		Arrays.sort(array);
+		int n = array.length;
+		double[] result = new double[n];
+		for(int i = 0;i<n;i++) {
+			result[i] = array[n-1-i];
+		}
+		return result;
 	}
 
-	// 容量
-	private double capacity(int[] v) {
-		double w = 0;
-		for (int i = 0; i < v.length; i++) {
-			w += v[i] * optfreq[i][1] / optfreq[i][0];
-		}
-		return w;
+	private double getWeight(int v, int index) {
+		double weight = -1; // 权值
+		switch (ws) {
+		case capacity:
+			weight = capacity(v, index);
+			break;
+		case constant:
+			weight = weight(v);
+			break;
+		case load:
+			weight = load(v, index);
+			break;
+		case neweight:
+			weight = neweight(v, index);
+			break;
+		case redemand:
+			weight = redemand(v, index);
+			break;
+		case slack:
+			weight = slack(v, index);
+			break;
+		case usagerate:
+			weight = usagerate(v, index);
+			break;
+		default:
+			System.out.println("权值策略设置有误！");
+			break;
 
+		}
+		return weight;
 	}
 
-	// 动态
-	// 剩余需求
-	private double redemand(int[] v) {
-		double w = 0;
-		// 动态剩余需求如何计算
-		for (int i = 0; i < v.length; i++) {
-			w += v[i] * (demand(i) - result[i]);
-		}
-//		System.out.print(w + " ");
-		return w;
-	}
+
 
 	private double demand(int optnum) {
 		double d = 0;
@@ -223,64 +317,66 @@ public final class SelectionAggregation implements IntValueSelector {
 		return d;
 	}
 
-	// 负载
-	private double load(int[] v) {
-		double w = 0;
-		// 动态剩余需求如何计算
-		for (int i = 0; i < v.length; i++) {
-			w += v[i] * loadcompute(i);
-		}
-//		System.out.print(w + " ");
-		return w;
-	}
-
 	private double loadcompute(int optnum) {
 		double l = (demand(optnum) - result[optnum]) * optfreq[optnum][1] / optfreq[optnum][0];
 		return l;
 	}
 
-	// 松弛度
-	private double slack(int[] v) {
-		double w = 0;
-		// 动态剩余需求如何计算
-		for (int i = 0; i < v.length; i++) {
-//			w += v[i] * (slots - demand(i) + loadcompute(i));
-//			w += v[i] * (slots - (demand(i) - result[i]) + loadcompute(i));
-			// 未完成
-			w += v[i] * (sumofArray(slotava) - slotava[i] + loadcompute(i));
-		}
-//		System.out.print(w + " ");
-		return w;
-	}
 
-	// 利用率
-	private double usagerate(int[] v) {
-		double w = 0;
-		// 动态剩余需求如何计算
-		for (int i = 0; i < v.length; i++) {
-			int tmp = slotava[i];
-			if (tmp == 0) {
-				tmp = 1;
-			}
-			w += v[i] * (loadcompute(i) / tmp);
-		}
+	// 新版
+	/*静态*/
+	/**常数*/
+	private double weight(int v) {
+		double w = v;
 //		System.out.print(w + " ");
 		return w;
 	}
-	
-	// 测试
-	private double neweight(int[] v) {
-		double w = 0;
-		// 动态剩余需求如何计算
-		for (int i = 0; i < v.length; i++) {
-			int tmp = slotava[i];
-			if (tmp == 0) {
-				tmp = 1;
-			}
-			w += v[i] * (sumofArray(slotava) * loadcompute(i) / (sumofArray(slotava) - slotava[i] + loadcompute(i)));
-		}
-//		System.out.print(w + " ");
+	/**容量*/
+	private double capacity(int v, int index) {
+		double w = v * (double)optfreq[index][1] / optfreq[index][0];
 		return w;
-	}
 
+	}
+	/*动态*/
+	/**剩余需求*/
+	private double redemand(int v, int index) {
+		// 动态剩余需求如何计算
+		double w = v * (demand(index) - result[index]);
+//		System.out.print(w + " ");
+		return w;
+	}
+	/**松弛度*/
+	private double slack(int v, int index) {
+		double w = v * (sumofArray(slotava) - slotava[index] + loadcompute(index));
+//		System.out.print(w + " ");
+		return w;
+	}
+	/**利用率*/
+	private double usagerate(int v, int index) {
+		int tmp = slotava[index];
+		if (tmp == 0) {
+			tmp = 1;
+		}
+		double w = v * (loadcompute(index) / tmp);
+//		System.out.print(w + " ");
+		return w;
+	}
+	/**负载值*/
+	private double load(int v, int index) {
+		double w = v * loadcompute(index);
+//		System.out.print(w + " ");
+		return w;
+	}
+	/**新权值*/
+	private double neweight(int v, int index) {
+		int tmp = slotava[index];
+		if (tmp == 0) {
+			tmp = 1;
+		}
+		double w = v * (sumofArray(slotava) * loadcompute(index)
+				/ (sumofArray(slotava) - slotava[index] + loadcompute(index)));
+
+//		System.out.print(w + " ");
+		return w;
+	}
 }
